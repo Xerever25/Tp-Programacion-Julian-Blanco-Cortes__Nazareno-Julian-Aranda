@@ -1,48 +1,92 @@
+# =======================
+# SISTEMA DE GESTIÓN DE ALUMNOS
+# =======================
+
+# Importación de módulos necesarios
 import os
 from datetime import datetime
 import random
-from getpass import getpass
+from getpass import getpass  # Para ocultar la contraseña al ingresarla
 
-# Constantes
+# ----------------------
+# CONSTANTES Y VARIABLES
+# ----------------------
+
 MAX_ESTUDIANTES = 8
 MAX_PROFESORES = 4
 MATERIAS = ["Matemática", "Lengua", "Programación", "Geografía"]
 
-# Variables globales
-cont_est = 0
-cont_prof = 0
-id_est = None
-id_prof = None
+# Contadores y datos globales
+cont_est = 0  # Cantidad actual de estudiantes
+cont_prof = 0  # Cantidad actual de profesores
+id_est = None  # ID del estudiante logueado
+id_prof = None  # ID del profesor logueado
 
-matriz_estudiantes = [["" for _ in range(8)] for _ in range(MAX_ESTUDIANTES)]
-matriz_likes = [[0 for _ in range(MAX_ESTUDIANTES)] for _ in range(MAX_ESTUDIANTES)]
-matriz_posi = [0 for _ in range(MAX_ESTUDIANTES)]
-matriz_notas = [[-1 for _ in MATERIAS] for _ in range(MAX_ESTUDIANTES)]
-matriz_profesores = [["" for _ in range(3)] for _ in range(MAX_PROFESORES)]
+# Estructuras de datos
+matriz_estudiantes = [["" for _ in range(8)] for _ in range(MAX_ESTUDIANTES)]  # Datos de estudiantes
+matriz_likes = [[0 for _ in range(MAX_ESTUDIANTES)] for _ in range(MAX_ESTUDIANTES)]  # Likes dados entre estudiantes
+matriz_posi = [0 for _ in range(MAX_ESTUDIANTES)]  # Likes recibidos
+matriz_notas = [[-1 for _ in MATERIAS] for _ in range(MAX_ESTUDIANTES)]  # Notas por materia
+matriz_profesores = [["" for _ in range(3)] for _ in range(MAX_PROFESORES)]  # Datos de profesores
 
-# Funciones auxiliares
+# --------------------------
+# FUNCIONES AUXILIARES
+# --------------------------
+
+# Búsqueda binaria (dicotómica)
+def busqueda_binaria(matriz, valor, columna, cantidad):
+    izquierda = 0
+    derecha = cantidad - 1
+
+    while izquierda <= derecha:
+        medio = (izquierda + derecha) // 2
+        actual = matriz[medio][columna].lower()
+
+        if actual == valor.lower():
+            return medio
+        elif actual < valor.lower():
+            izquierda = medio + 1
+        else:
+            derecha = medio - 1
+
+    return -1
+
+# Ordenamiento simple por columna (usamos bubble sort por simplicidad)
+def ordenar_matriz_por_columna(matriz, columna, cantidad):
+    for i in range(cantidad - 1):
+        for j in range(0, cantidad - i - 1):
+            if matriz[j][columna].lower() > matriz[j+1][columna].lower():
+                matriz[j], matriz[j+1] = matriz[j+1], matriz[j]
+
+# Calcula la edad a partir de la fecha de nacimiento
 def calcular_edad(fecha_nacimiento):
     hoy = datetime.now()
     return hoy.year - fecha_nacimiento.year - ((hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
 
-def buscar_email(matriz, correo, max_elementos):
-    for i in range(max_elementos):
-        if matriz[i][1] == correo:
-            return i
-    return -1
+# Busca un estudiante/profesor por correo usando búsqueda binaria.
+def buscar_email(matriz, correo, cantidad):
+    ordenar_matriz_por_columna(matriz, 1, cantidad)  # columna 1 = correo
+    return busqueda_binaria(matriz, correo, 1, cantidad)
 
-def buscar_nombre(matriz, nombre, max_elementos):
-    for i in range(max_elementos):
-        if matriz[i][0].lower() == nombre.lower():
-            return i
-    return -1
+# Busca un estudiante/profesor por nombre usando búsqueda binaria.
+def buscar_nombre(matriz, nombre, cantidad):
+    ordenar_matriz_por_columna(matriz, 0, cantidad)  # columna 0 = nombre
+    return busqueda_binaria(matriz, nombre, 0, cantidad)
 
+# Muestra un mensaje y pausa la ejecución
 def pausar_mensaje(mensaje):
     print(mensaje)
     input("Presione Enter para continuar")
 
-# Registro
+# --------------------------
+# REGISTRO DE USUARIOS
+# --------------------------
+
 def registrarse():
+    """
+    Permite registrar nuevos estudiantes y profesores.
+    Guarda sus datos en las matrices correspondientes.
+    """
     global cont_est, cont_prof
     continuar = True
     while continuar:
@@ -85,7 +129,16 @@ def registrarse():
 
         else:
             pausar_mensaje("Opción inválida")
+
+# --------------------------
+# MENÚ PARA ESTUDIANTES
+# --------------------------
+
 def menu_principal_est():
+    """
+    Muestra el menú principal para estudiantes.
+    Permite ver y editar perfil, dar likes, ver popularidad y usar ruleta.
+    """
     global id_est
     continuar = True
     while continuar:
@@ -95,6 +148,7 @@ def menu_principal_est():
         print("2. Editar perfil")
         print("3. Dar like")
         print("4. Ver top popularidad")
+        print("5. Ver mis notas")
         print("0. Cerrar sesión")
         opcion = input("Seleccione una opción: ")
 
@@ -135,6 +189,14 @@ def menu_principal_est():
             for i, (nombre, likes) in enumerate(ranking):
                 print(f"{i+1}. {nombre} - Likes: {likes}")
             input("Presione Enter para continuar")
+        
+        elif opcion == "5":
+            print("Mis notas:")
+            for j, materia in enumerate(MATERIAS):
+                nota = matriz_notas[id_est][j]
+                nota_str = str(nota) if nota != -1 else "Sin nota"
+                print(f"{materia}: {nota_str}")
+            input("Presione Enter para continuar")
 
         elif opcion == "0":
             continuar = False
@@ -142,8 +204,15 @@ def menu_principal_est():
         else:
             pausar_mensaje("Opción inválida")
 
-# Menú profesor
+# --------------------------
+# MENÚ PARA PROFESORES
+# --------------------------
+
 def menu_profesor():
+    """
+    Permite al profesor activar/desactivar cuentas,
+    cargar notas y consultar las notas de un estudiante.
+    """
     continuar = True
     while continuar:
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -197,7 +266,10 @@ def menu_profesor():
         else:
             pausar_mensaje("Opción inválida")
 
-# Menú inicial
+# --------------------------
+# MENÚ INICIAL (LOGIN)
+# --------------------------
+
 continuar = True
 while continuar:
     os.system('cls' if os.name == 'nt' else 'clear')
