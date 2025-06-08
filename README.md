@@ -48,3 +48,6 @@ Validar datos correctamente y anticipar errores del usuario.
 Además, intentamos darle un enfoque realista, pensando no solo en que funcione, sino en que sea útil y entendible para cualquier persona que lo use.
 
 En resumen, estamos satisfechos con el resultado final. Más allá de la nota, sentimos que dimos un paso importante como programadores principiantes. Gracias por tomarse el tiempo de ver nuestro trabajo.
+
+Link del video solicitado: https://www.youtube.com/watch?v=E2sm51DgoYc
+
